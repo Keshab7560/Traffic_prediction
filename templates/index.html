@@ -1,0 +1,1277 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrafficVision AI | Smart Traffic Prediction</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: #0D1B2A;
+            --secondary-bg: #1B263B;
+            --text-light: #FFFFFF;
+            --text-gray: #E0E1DD;
+            --traffic-green: #4CAF50;
+            --traffic-yellow: #FFC107;
+            --traffic-red: #F44336;
+            --gradient-blue: linear-gradient(135deg, #00B4D8, #7209B7);
+            --card-bg: rgba(27, 38, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --form-bg: rgba(255, 255, 255, 0.1);
+            --shadow-color: rgba(0, 0, 0, 0.2);
+        }
+
+        [data-theme="light"] {
+            --primary-bg: #E6E6E6;
+            --secondary-bg: #FFFFFF;
+            --text-light: #2D3748;
+            --text-gray: #4A5568;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --card-border: rgba(0, 0, 0, 0.1);
+            --form-bg: rgba(0, 0, 0, 0.05);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Raleway', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-light);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .navbar {
+            background: rgba(13, 27, 42, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(224, 225, 221, 0.1);
+            padding: 15px 0;
+            transition: all 0.5s ease;
+        }
+
+        [data-theme="light"] .navbar {
+            background: rgba(230, 230, 230, 0.9);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            background: var(--gradient-blue);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: 1.5rem;
+        }
+
+        .nav-link {
+            color: var(--text-gray);
+            font-weight: 500;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--text-light);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: var(--gradient-blue);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #1B263B;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background: var(--gradient-blue);
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #E0E1DD;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .hero-section {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            background: url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1800&q=80') no-repeat center center;
+            background-size: cover;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(13, 27, 42, 0.85);
+            transition: background 0.5s ease;
+        }
+
+        [data-theme="light"] .hero-section::before {
+            background: rgba(230, 230, 230, 0.85);
+        }
+
+        .hero-content {
+            z-index: 1;
+            position: relative;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: var(--gradient-blue);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-gray);
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+
+        .traffic-light-container {
+            perspective: 1000px;
+        }
+
+        .traffic-light {
+            width: 140px;
+            height: 360px;
+            background: linear-gradient(45deg, #2c3e50, #1a2530);
+            border-radius: 20px;
+            position: relative;
+            margin: 0 auto;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.6), 0 0 0 10px rgba(120, 120, 120, 0.2), 0 0 0 15px rgba(80, 80, 80, 0.1);
+            transform-style: preserve-3d;
+            transform: rotateX(5deg);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding: 25px 0;
+        }
+
+        .light {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30px 30px, #888, #222);
+            transition: all 0.5s ease;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .light::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: transparent;
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .red-light {
+            background: radial-gradient(circle at 30px 30px, #ff3b30, #800000);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 0 0 5px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 59, 48, 0.8);
+            animation: redPulse 5s infinite;
+        }
+
+        .yellow-light {
+            background: radial-gradient(circle at 30px 30px, #ffcc00, #806000);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 0 0 5px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 204, 0, 0.8);
+            animation: yellowPulse 5s infinite 1.67s;
+        }
+
+        .green-light {
+            background: radial-gradient(circle at 30px 30px, #4cd964, #206030);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 0 0 5px rgba(0, 0, 0, 0.3), 0 0 30px rgba(76, 217, 100, 0.8);
+            animation: greenPulse 5s infinite 3.33s;
+        }
+
+        @keyframes redPulse {
+            0%, 33% { opacity: 1; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 0 0 5px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 59, 48, 0.8); }
+            34%, 100% { opacity: 0.3; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 0 0 5px rgba(0, 0, 0, 0.3), 0 0 10px rgba(255, 59, 48, 0.4); }
+        }
+
+        @keyframes yellowPulse {
+            0%, 33% { opacity: 0.3; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 0 0 5px rgba(0, 0, 0, 0.3), 0 0 10px rgba(255, 204, 0, 0.4); }
+            34%, 66% { opacity: 1; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 0 0 5px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 204, 0, 0.8); }
+            67%, 100% { opacity: 0.3; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 0 0 5px rgba(0, 0, 0, 0.3), 0 0 10px rgba(255, 204, 0, 0.4); }
+        }
+
+        @keyframes greenPulse {
+            0%, 66% { opacity: 0.3; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 0 0 5px rgba(0, 0, 0, 0.3), 0 0 10px rgba(76, 217, 100, 0.4); }
+            67%, 100% { opacity: 1; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 0 0 5px rgba(0, 0, 0, 0.3), 0 0 30px rgba(76, 217, 100, 0.8); }
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+            background: var(--gradient-blue);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .card-glass {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid var(--card-border);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            box-shadow: 0 8px 32px var(--shadow-color);
+        }
+
+        .card-glass:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px var(--shadow-color);
+        }
+
+        .btn-glow {
+            background: var(--gradient-blue);
+            border: none;
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-weight: 600;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .btn-glow:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(114, 9, 183, 0.4);
+        }
+
+        .btn-glow::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s ease;
+            transform: translateX(-100%);
+        }
+
+        .btn-glow:hover::after {
+            transform: translateX(100%);
+        }
+
+        .form-control, .form-select {
+            background: var(--form-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-light);
+            border-radius: 8px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: var(--form-bg);
+            border-color: rgba(0, 180, 216, 0.5);
+            box-shadow: 0 0 0 0.25rem rgba(0, 180, 216, 0.25);
+            color: var(--text-light);
+        }
+
+        .form-label {
+            color: var(--text-gray);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .vehicle-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+            color: #00B4D8;
+        }
+
+        .prediction-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            border-left: 5px solid;
+            transition: all 0.5s ease;
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .prediction-heavy {
+            border-left-color: var(--traffic-red);
+            background: linear-gradient(90deg, rgba(244, 67, 54, 0.1), var(--card-bg));
+        }
+
+        .prediction-high {
+            border-left-color: var(--traffic-yellow);
+            background: linear-gradient(90deg, rgba(255, 193, 7, 0.1), var(--card-bg));
+        }
+
+        .prediction-normal {
+            border-left-color: #00B4D8;
+            background: linear-gradient(90deg, rgba(0, 180, 216, 0.1), var(--card-bg));
+        }
+
+        .prediction-low {
+            border-left-color: var(--traffic-green);
+            background: linear-gradient(90deg, rgba(76, 175, 80, 0.1), var(--card-bg));
+        }
+
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+            background: var(--form-bg);
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            border-radius: 5px;
+            transition: width 1s ease-in-out;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .floating-card {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .recommendation-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #00B4D8;
+            animation: slideInRight 0.8s ease;
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        footer {
+            background: var(--secondary-bg);
+            padding: 40px 0 20px;
+            margin-top: 80px;
+            transition: background 0.5s ease;
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--form-bg);
+            color: var(--text-light);
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .social-icon:hover {
+            background: var(--gradient-blue);
+            transform: translateY(-5px);
+        }
+
+        .about-feature {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .about-feature.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .traffic-light {
+                width: 120px;
+                height: 300px;
+            }
+            
+            .light {
+                width: 70px;
+                height: 70px;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-traffic-light me-2"></i>TrafficVision AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#prediction">Prediction</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#analytics">Analytics</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <label class="theme-switch" for="theme-toggle">
+                            <input type="checkbox" id="theme-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 hero-content">
+                    <h1 class="hero-title">AI Powered Traffic Prediction</h1>
+                    <p class="hero-subtitle">Leverage machine learning to predict traffic conditions with unprecedented accuracy. Plan your routes smarter and avoid congestion.</p>
+                    <a href="#prediction" class="btn btn-glow">Get Started <i class="fas fa-arrow-right ms-2"></i></a>
+                </div>
+                <div class="col-lg-6 text-center traffic-light-container">
+                    <div class="traffic-light floating-card">
+                        <div class="light red-light"></div>
+                        <div class="light yellow-light"></div>
+                        <div class="light green-light"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Prediction Section -->
+    <section id="prediction" class="py-5 mt-5">
+        <div class="container">
+            <h2 class="section-title">Traffic Prediction</h2>
+            
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="card-glass p-4 mb-4">
+                        <form id="prediction-form">
+                            <div class="row">
+                                <!-- Vehicle Counts -->
+                                <div class="col-md-6">
+                                    <h4 class="mb-3 border-bottom pb-2" style="color: var(--text-gray);"><i class="fas fa-car-side me-2"></i>Vehicle Counts</h4>
+                                    
+                                    <div class="mb-3">
+                                        <label for="car_count" class="form-label">
+                                            <i class="fas fa-car vehicle-icon"></i> Cars
+                                        </label>
+                                        <input type="number" class="form-control" id="car_count" name="car_count" min="0" value="50" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="bike_count" class="form-label">
+                                            <i class="fas fa-motorcycle vehicle-icon"></i> Bikes
+                                        </label>
+                                        <input type="number" class="form-control" id="bike_count" name="bike_count" min="0" value="10" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="bus_count" class="form-label">
+                                            <i class="fas fa-bus vehicle-icon"></i> Buses
+                                        </label>
+                                        <input type="number" class="form-control" id="bus_count" name="bus_count" min="0" value="5" required>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label for="truck_count" class="form-label">
+                                            <i class="fas fa-truck vehicle-icon"></i> Trucks
+                                        </label>
+                                        <input type="number" class="form-control" id="truck_count" name="truck_count" min="0" value="8" required>
+                                    </div>
+                                </div>
+                                
+                                <!-- Time Parameters -->
+                                <div class="col-md-6">
+                                    <h4 class="mb-3 border-bottom pb-2" style="color: var(--text-gray);"><i class="fas fa-clock me-2"></i>Time Parameters</h4>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <label for="hour" class="form-label">Hour</label>
+                                            <input type="number" class="form-control" id="hour" name="hour" min="0" max="23" value="17" required>
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="minute" class="form-label">Minute</label>
+                                            <input type="number" class="form-control" id="minute" name="minute" min="0" max="59" value="30" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label for="day_of_week" class="form-label">Day of Week</label>
+                                        <select class="form-select" id="day_of_week" name="day_of_week" required style="color: var(--text-light);">
+                                            <option value="Monday" style="color: var(--text-light); background: var(--card-bg);">Monday</option>
+                                            <option value="Tuesday" style="color: var(--text-light); background: var(--card-bg);">Tuesday</option>
+                                            <option value="Wednesday" style="color: var(--text-light); background: var(--card-bg);">Wednesday</option>
+                                            <option value="Thursday" style="color: var(--text-light); background: var(--card-bg);">Thursday</option>
+                                            <option value="Friday" style="color: var(--text-light); background: var(--card-bg);">Friday</option>
+                                            <option value="Saturday" style="color: var(--text-light); background: var(--card-bg);">Saturday</option>
+                                            <option value="Sunday" style="color: var(--text-light); background: var(--card-bg);">Sunday</option>
+                                        </select>
+                                    </div>
+                                    
+                                    
+                                    
+                                    <button type="submit" class="btn btn-glow w-100 py-3">
+                                        <i class="fas fa-bolt me-2"></i>Predict Traffic
+                                    </button>
+                                    <!-- The "New Prediction" button is always visible now -->
+                                    <button type="button" id="new-prediction" class="btn btn-outline-light w-100 mt-3 py-2">
+                                        <i class="fas fa-plus me-2"></i>New Prediction
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Prediction Result -->
+                    <div id="prediction-result" class="prediction-card d-none">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="d-flex align-items-center mb-0">
+                                <span id="result-icon" class="me-2"></span> 
+                                <span id="result-text"></span>
+                            </h4>
+                            <button id="download-pdf" class="btn btn-sm btn-outline-light">
+                                <i class="fas fa-download me-1"></i>PDF Report
+                            </button>
+                        </div>
+                        <p class="mb-3 mt-2" id="result-message"></p>
+                        <hr>
+                        
+                        <!-- Personalized Recommendations -->
+                        <div id="recommendations" class="recommendation-card d-none">
+                            <h5><i class="fas fa-lightbulb me-2"></i>Personalized Recommendations</h5>
+                            <p id="recommendation-text" class="mb-0"></p>
+                        </div>
+                        
+                        <h5 class="mt-4">Probability Distribution</h5>
+                        <div id="probability-bars" class="mt-3"></div>
+                        <p class="text-muted mt-3 mb-0">Last updated: <span id="timestamp">-</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Analytics Section -->
+    <section id="analytics" class="py-5" style="background: rgba(27, 38, 59, 0.3);">
+        <div class="container">
+            <h2 class="section-title">Traffic Analytics</h2>
+            
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="card-glass p-4 h-100">
+                        <h4 class="mb-3"><i class="fas fa-chart-line me-2"></i>Prediction Trends</h4>
+                        <div class="chart-container">
+                            <canvas id="trafficTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="card-glass p-4 h-100">
+                        <h4 class="mb-3"><i class="fas fa-chart-pie me-2"></i>Traffic Distribution</h4>
+                        <div class="chart-container">
+                            <canvas id="trafficDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-glass p-4 mt-4">
+                <h4 class="mb-3"><i class="fas fa-map-marked-alt me-2"></i>Traffic Heatmap</h4>
+                <div class="chart-container">
+                    <canvas id="trafficHeatmap"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-5">
+        <div class="container">
+            <h2 class="section-title">About TrafficVision AI</h2>
+            
+            <div class="row">
+                <div class="col-lg-6 mb-4 about-feature">
+                    <div class="card-glass p-4 h-100">
+                        <h4><i class="fas fa-brain me-2"></i>How It Works</h4>
+                        <p>Our AI-powered traffic prediction system uses machine learning algorithms trained on historical traffic data, weather conditions, time parameters, and real-time vehicle counts to accurately predict traffic patterns.</p>
+                        <p>The model considers multiple factors including:</p>
+                        <ul>
+                            <li>Vehicle density and types</li>
+                            <li>Time of day and day of week</li>
+                            <li>Historical traffic patterns</li>
+                            <li>Weather conditions</li>
+                            <li>Special events and holidays</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4 about-feature">
+                    <div class="card-glass p-4 h-100">
+                        <h4><i class="fas fa-lightbulb me-2"></i>Benefits</h4>
+                        <p>Using TrafficVision AI can help you:</p>
+                        <ul>
+                            <li>Reduce commute times by avoiding congestion</li>
+                            <li>Lower fuel consumption and emissions</li>
+                            <li>Plan optimal routes for delivery services</li>
+                            <li>Make informed decisions about travel times</li>
+                            <li>Contribute to smarter city planning</li>
+                        </ul>
+                        <div class="mt-3">
+                            <a href="#prediction" class="btn btn-glow mt-3">Try It Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-4 mb-4 about-feature">
+                    <div class="card-glass p-4 h-100 text-center">
+                        <div class="display-4 text-primary mb-3">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h4>AI-Powered</h4>
+                        <p>Advanced machine learning algorithms for accurate predictions</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4 about-feature">
+                    <div class="card-glass p-4 h-100 text-center">
+                        <div class="display-4 text-warning mb-3">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h4>Real-Time</h4>
+                        <p>Get instant traffic predictions based on current conditions</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4 about-feature">
+                    <div class="card-glass p-4 h-100 text-center">
+                        <div class="display-4 text-success mb-3">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4>Analytics</h4>
+                        <p>Comprehensive traffic analytics and trend visualization</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h4>TrafficVision AI</h4>
+                    <p>Intelligent traffic prediction for smarter cities and smoother journeys.</p>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#home" class="text-light">Home</a></li>
+                        <li><a href="#prediction" class="text-light">Prediction</a></li>
+                        <li><a href="#analytics" class="text-light">Analytics</a></li>
+                        <li><a href="#about" class="text-light">About</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <h5>Connect With Us</h5>
+                    <div class="d-flex mt-3">
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-4 mb-4" style="border-color: rgba(255,255,255,0.1);">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2023 TrafficVision AI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Initialize theme toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    
+    // Check for saved theme preference or respect OS preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        body.setAttribute('data-theme', savedTheme);
+        themeToggle.checked = savedTheme === 'light';
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        body.setAttribute('data-theme', 'light');
+        themeToggle.checked = true;
+    }
+    
+    themeToggle.addEventListener('change', function() {
+        if (this.checked) {
+            body.setAttribute('data-theme', 'light');
+            localStorage.setItem('theme', 'light');
+        } else {
+            body.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize charts
+        const trendCtx = document.getElementById('trafficTrendChart').getContext('2d');
+        const trafficTrendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Traffic Intensity',
+                    data: [65, 74, 80, 82, 85, 45, 40],
+                    borderColor: '#00B4D8',
+                    backgroundColor: 'rgba(0, 180, 216, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: 'var(--text-gray)' }
+                    },
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: 'var(--text-gray)' }
+                    }
+                }
+            }
+        });
+
+        const distCtx = document.getElementById('trafficDistributionChart').getContext('2d');
+        const trafficDistributionChart = new Chart(distCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Heavy', 'High', 'Normal', 'Low'],
+                datasets: [{
+                    data: [20, 30, 35, 15],
+                    backgroundColor: [
+                        '#F44336',
+                        '#FFC107',
+                        '#00B4D8',
+                        '#4CAF50'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: 'var(--text-gray)' }
+                    }
+                }
+            }
+        });
+
+        // Initialize heatmap
+        const heatmapCtx = document.getElementById('trafficHeatmap').getContext('2d');
+        const trafficHeatmap = new Chart(heatmapCtx, {
+            type: 'bar',
+            data: {
+                labels: ['6AM', '9AM', '12PM', '3PM', '6PM', '9PM'],
+                datasets: [{
+                    label: 'Traffic Intensity',
+                    data: [80, 95, 70, 85, 98, 60],
+                    backgroundColor: [
+                        'rgba(76, 175, 80, 0.7)',
+                        'rgba(255, 193, 7, 0.7)',
+                        'rgba(0, 180, 216, 0.7)',
+                        'rgba(255, 193, 7, 0.7)',
+                        'rgba(244, 67, 54, 0.7)',
+                        'rgba(76, 175, 80, 0.7)'
+                    ],
+                    borderColor: [
+                        '#4CAF50',
+                        '#FFC107',
+                        '#00B4D8',
+                        '#FFC107',
+                        '#F44336',
+                        '#4CAF50'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: 'var(--text-gray)' }
+                    },
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: 'var(--text-gray)' }
+                    }
+                }
+            }
+        });
+
+        // Form submission handling
+        const form = document.getElementById('prediction-form');
+        const resultDiv = document.getElementById('prediction-result');
+        const resultText = document.getElementById('result-text');
+        const resultIcon = document.getElementById('result-icon');
+        const resultMessage = document.getElementById('result-message');
+        const probabilityBars = document.getElementById('probability-bars');
+        const timestamp = document.getElementById('timestamp');
+        const newPredictionBtn = document.getElementById('new-prediction');
+        const daySelect = document.getElementById('day_of_week');
+        const weekendCheckbox = document.getElementById('is_weekend');
+        const downloadPdfBtn = document.getElementById('download-pdf');
+        const recommendationsDiv = document.getElementById('recommendations');
+        const recommendationText = document.getElementById('recommendation-text');
+        
+        // Update weekend checkbox based on day selection
+        daySelect.addEventListener('change', function() {
+            weekendCheckbox.checked = (this.value === 'Saturday' || this.value === 'Sunday');
+        });
+        
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = new FormData(form);
+            const data = {};
+            for (const [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            // Make API call to backend
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    displayPredictionResult(result);
+                } else {
+                    // If API fails, use fallback simulation
+                    simulatePrediction();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Use fallback simulation if API call fails
+                simulatePrediction();
+            });
+        });
+        
+        // New prediction button
+        newPredictionBtn.addEventListener('click', function() {
+            resultDiv.classList.add('d-none'); // Hide the prediction result
+            recommendationsDiv.classList.add('d-none'); // Hide recommendations
+            // The form is always visible, so no need to manipulate its class here.
+            // You might want to reset form fields here if desired.
+            // form.reset(); // Uncomment this line if you want to clear form inputs on "New Prediction" click
+        });
+        
+        // Download PDF button
+        downloadPdfBtn.addEventListener('click', function() {
+            // Create a temporary div with all the content for PDF generation
+            const pdfContent = document.createElement('div');
+            pdfContent.style.padding = '20px';
+            pdfContent.style.backgroundColor = 'white';
+            pdfContent.style.color = 'black';
+            pdfContent.style.fontFamily = 'Arial, sans-serif';
+            
+            // Add title
+            const title = document.createElement('h2');
+            title.textContent = 'Traffic Prediction Report';
+            title.style.textAlign = 'center';
+            title.style.marginBottom = '10px';
+            pdfContent.appendChild(title);
+            
+            // Add timestamp
+            const timestampEl = document.createElement('p');
+            timestampEl.textContent = `Generated on: ${new Date().toLocaleString()}`;
+            timestampEl.style.textAlign = 'center';
+            timestampEl.style.marginBottom = '20px';
+            pdfContent.appendChild(timestampEl);
+            
+            // Add prediction result
+            const resultTitle = document.createElement('h3');
+            resultTitle.textContent = 'Prediction Result';
+            resultTitle.style.marginBottom = '10px';
+            pdfContent.appendChild(resultTitle);
+            
+            const predictionText = document.createElement('p');
+            predictionText.innerHTML = `<strong>Prediction:</strong> ${resultText.textContent}`;
+            pdfContent.appendChild(predictionText);
+            
+            const messageText = document.createElement('p');
+            messageText.innerHTML = `<strong>Message:</strong> ${resultMessage.textContent}`;
+            pdfContent.appendChild(messageText);
+            
+            // Add probabilities
+            const probTitle = document.createElement('h3');
+            probTitle.textContent = 'Probability Distribution';
+            probTitle.style.marginTop = '20px';
+            probTitle.style.marginBottom = '10px';
+            pdfContent.appendChild(probTitle);
+            
+            const probabilityElements = probabilityBars.querySelectorAll('.mb-2');
+            probabilityElements.forEach(el => {
+                const clone = el.cloneNode(true);
+                clone.style.marginBottom = '15px';
+                pdfContent.appendChild(clone);
+            });
+            
+            // Add recommendations if available
+            if (!recommendationsDiv.classList.contains('d-none')) {
+                const recTitle = document.createElement('h3');
+                recTitle.textContent = 'Recommendations';
+                recTitle.style.marginTop = '20px';
+                recTitle.style.marginBottom = '10px';
+                pdfContent.appendChild(recTitle);
+                
+                const recText = document.createElement('p');
+                recText.innerHTML = recommendationText.innerHTML.replace(/<br>/g, '\n');
+                pdfContent.appendChild(recText);
+            }
+            
+            // Add to document body temporarily
+            document.body.appendChild(pdfContent);
+            
+            // Generate PDF
+            html2canvas(pdfContent, {
+                scale: 2,
+                useCORS: true,
+                logging: false
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                
+                const imgWidth = 190;
+                const pageHeight = 280;
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 10;
+                
+                doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    doc.addPage();
+                    doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                // Save the PDF
+                doc.save('traffic-prediction-report.pdf');
+                
+                // Remove temporary element
+                document.body.removeChild(pdfContent);
+            });
+        });
+        
+        // Display prediction result from API
+        function displayPredictionResult(result) {
+            // Show result container
+            resultDiv.classList.remove('d-none');
+            
+            // Update UI with prediction
+            resultText.textContent = `Prediction: ${result.prediction.toUpperCase()}`;
+            resultIcon.textContent = result.icon;
+            
+            // Set appropriate message based on prediction
+            let message = '';
+            if (result.prediction === "heavy") {
+                message = "Heavy traffic conditions expected. Consider alternative routes or travel times.";
+                resultDiv.className = 'prediction-card prediction-heavy';
+            } else if (result.prediction === "high") {
+                message = "Higher than normal traffic flow. Expect some delays.";
+                resultDiv.className = 'prediction-card prediction-high';
+            } else if (result.prediction === "normal") {
+                message = "Normal traffic conditions. Typical travel times expected.";
+                resultDiv.className = 'prediction-card prediction-normal';
+            } else {
+                message = "Light traffic conditions. Good time to travel!";
+                resultDiv.className = 'prediction-card prediction-low';
+            }
+            
+            resultMessage.textContent = message;
+            
+            // Generate personalized recommendations
+            let bestTime = "7 AM";
+            let reductionTime = "30 minutes";
+            
+            if (result.prediction === "heavy") {
+                bestTime = "10 AM";
+                reductionTime = "90 minutes";
+            } else if (result.prediction === "high") {
+                bestTime = "9 AM";
+                reductionTime = "60 minutes";
+            } else if (result.prediction === "normal") {
+                bestTime = "8 AM";
+                reductionTime = "30 minutes";
+            }
+            
+            recommendationText.innerHTML = `
+                <strong>Best time to travel tomorrow:</strong> ${bestTime}<br>
+                <strong>Traffic will reduce after:</strong> ${reductionTime}<br>
+                <strong>Recommended route:</strong> Main Highway via Downtown
+            `;
+            recommendationsDiv.classList.remove('d-none');
+            
+            // Create probability bars
+            probabilityBars.innerHTML = '';
+            for (const [condition, probability] of Object.entries(result.probabilities)) {
+                const alertClass = condition === 'heavy' ? 'danger' : 
+                                 condition === 'high' ? 'warning' : 
+                                 condition === 'normal' ? 'info' : 'success';
+                                 
+                const barHtml = `
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>${condition.charAt(0).toUpperCase() + condition.slice(1)}</span>
+                            <span>${probability}%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-${alertClass}" role="progressbar" 
+                                 style="width: ${probability}%" aria-valuenow="${probability}" 
+                                 aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                `;
+                probabilityBars.innerHTML += barHtml;
+            }
+            
+            // Update timestamp
+            timestamp.textContent = result.timestamp;
+            
+            // The form remains visible, no need to hide it.
+            // The "New Prediction" button is always visible, no need to manipulate its class here.
+        }
+        
+        // Simulate prediction (fallback if API is not available)
+        function simulatePrediction() {
+            // Show loading state
+            resultDiv.classList.remove('d-none');
+            resultDiv.className = 'prediction-card';
+            resultText.textContent = 'Analyzing data...';
+            resultIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            resultMessage.textContent = 'Please wait while we process your traffic data';
+            probabilityBars.innerHTML = '';
+            recommendationsDiv.classList.add('d-none');
+            
+            // Simulate API delay
+            setTimeout(() => {
+                // Get form values
+                const carCount = parseInt(document.getElementById('car_count').value);
+                const bikeCount = parseInt(document.getElementById('bike_count').value);
+                const busCount = parseInt(document.getElementById('bus_count').value);
+                const truckCount = parseInt(document.getElementById('truck_count').value);
+                const hour = parseInt(document.getElementById('hour').value);
+                const minute = parseInt(document.getElementById('minute').value);
+                const dayOfWeek = document.getElementById('day_of_week').value;
+                
+                // Calculate total vehicles
+                const totalVehicles = carCount + bikeCount + busCount + truckCount;
+                
+                // Determine prediction based on inputs
+                let prediction, alertType, icon, message;
+                let probabilities = {};
+                
+                if (totalVehicles > 200 || (7 <= hour && hour <= 9) || (16 <= hour && hour <= 18)) {
+                    prediction = "heavy";
+                    alertType = "prediction-heavy";
+                    icon = "⚠️";
+                    message = "Heavy traffic conditions expected. Consider alternative routes or travel times.";
+                    probabilities = {"heavy": 75, "high": 15, "normal": 7, "low": 3};
+                } else if (totalVehicles > 150) {
+                    prediction = "high";
+                    alertType = "prediction-high";
+                    icon = "🔶";
+                    message = "Higher than normal traffic flow. Expect some delays.";
+                    probabilities = {"heavy": 20, "high": 60, "normal": 15, "low": 5};
+                } else if (totalVehicles > 80) {
+                    prediction = "normal";
+                    alertType = "prediction-normal";
+                    icon = "ℹ️";
+                    message = "Normal traffic conditions. Typical travel times expected.";
+                    probabilities = {"heavy": 5, "high": 15, "normal": 70, "low": 10};
+                } else {
+                    prediction = "low";
+                    alertType = "prediction-low";
+                    icon = "✅";
+                    message = "Light traffic conditions. Good time to travel!";
+                    probabilities = {"heavy": 0, "high": 5, "normal": 15, "low": 80};
+                }
+                
+                // Create API-like response object
+                const result = {
+                    success: true,
+                    prediction: prediction,
+                    icon: icon,
+                    alert_type: alertType,
+                    probabilities: probabilities,
+                    timestamp: new Date().toLocaleString()
+                };
+                
+                // Display the result
+                displayPredictionResult(result);
+                
+            }, 1500); // Simulate API delay
+        }
+        
+        // Animate about section elements on scroll
+        function checkScroll() {
+            const aboutFeatures = document.querySelectorAll('.about-feature');
+            aboutFeatures.forEach(feature => {
+                const position = feature.getBoundingClientRect();
+                
+                // If element is in viewport
+                if(position.top < window.innerHeight * 0.85) {
+                    feature.classList.add('visible');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', checkScroll);
+        checkScroll(); // Check on initial load
+    });
+</script>
+</body>
+</html>
